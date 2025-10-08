@@ -1,10 +1,11 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 function Navbar() {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
       <div className="container">
-        <a className="navbar-brand" href="#">EduSystem</a>
+        <Link className="navbar-brand" to="/">EduSystem</Link>
         <button
           className="navbar-toggler"
           type="button"
@@ -20,15 +21,14 @@ function Navbar() {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
-              <a className="nav-link" href="/components/StudentList">Students</a>
+              <Link className="nav-link" to="/students">Students</Link>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="/StudentList">Teachers</a>
+              <Link className="nav-link" to="/teachers">Teachers</Link>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="/StudentList">Departments</a>
+              <Link className="nav-link" to="/departments">Departments</Link>
             </li>
-            {/* Add more pages here */}
           </ul>
         </div>
       </div>
