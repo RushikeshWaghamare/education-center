@@ -5,14 +5,14 @@ const StudentList = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
- const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const pageFromUrl = parseInt(searchParams.get("page")) || 1;
   const [currentPage, setCurrentPage] = useState(pageFromUrl);
   const [studentsPerPage] = useState(5);
   const [totalPages, setTotalPages] = useState(0);
   const [search, setSearch] = useState("");
-
-
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
+  
   const [newStudent, setNewStudent] = useState({
     firstName: "",
     lastName: "",
@@ -94,6 +94,7 @@ const StudentList = () => {
 
       // ✅ Refresh list (first page)
       await fetchStudents(1);
+      showToast("Student added successfully!", "success");
 
       setShowForm(false);
       setNewStudent({
@@ -109,8 +110,37 @@ const StudentList = () => {
       setCurrentPage(1);
     } catch (error) {
       console.error("Error adding student:", error);
+      showToast("Failed to add student.", "error");
     }
   };
+
+  // ✅ Handle Delete Student
+const handleDelete = async (studentID) => {
+  if (!window.confirm("Are you sure you want to delete this student?")) return;
+
+  try {
+    const response = await fetch(`https://localhost:44303/api/Students/${studentID}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) throw new Error("Failed to delete student");
+
+    await fetchStudents(currentPage);
+    showToast("Student deleted successfully!", "success"); // ✅ Toast success
+  } catch (error) {
+    console.error("Error deleting student:", error);
+    showToast("Failed to delete student.", "error"); // ✅ Toast error
+  }
+};
+
+
+// ✅ Show toast
+const showToast = (message, type = "success") => {
+  setToast({ show: true, message, type });
+  setTimeout(() => setToast({ show: false, message: "", type: "" }), 3000); // auto-hide in 3s
+};
+
+
 
   // ✅ Pagination controls
   const paginate = (pageNumber) => fetchStudents(pageNumber);
@@ -169,6 +199,7 @@ const StudentList = () => {
               <th>Email</th>
               <th>Phone</th>
               <th>Address</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -186,6 +217,14 @@ const StudentList = () => {
                   <td>{s.email}</td>
                   <td>{s.phone}</td>
                   <td>{s.address}</td>
+                  <td>
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => handleDelete(s.studentID)}
+                    >
+                      🗑
+                    </button>
+                  </td>
                 </tr>
               ))
             ) : (
@@ -322,6 +361,27 @@ const StudentList = () => {
           </div>
         </div>
       )}
+    {/* ✅ Toast Notification */}
+    {toast.show && (
+      <div
+        className={`toast align-items-center text-white border-0 position-fixed bottom-0 end-0 m-4 bg-${
+          toast.type === "success" ? "success" : "danger"
+        } show`}
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        style={{ zIndex: 1056, minWidth: "250px" }}
+      >
+        <div className="d-flex">
+          <div className="toast-body fw-semibold">{toast.message}</div>
+          <button
+            type="button"
+            className="btn-close btn-close-white me-2 m-auto"
+            onClick={() => setToast({ show: false, message: "", type: "" })}
+          ></button>
+        </div>
+      </div>
+    )}
     </div>
   );
 };
