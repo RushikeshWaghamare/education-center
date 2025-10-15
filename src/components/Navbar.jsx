@@ -1,24 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, NavLink } from "react-router-dom";
-import { FaUserCircle, FaSun, FaMoon, FaSearch } from "react-icons/fa";
+import { FaUserCircle, FaSearch } from "react-icons/fa";
 
-function Navbar() {
-  const [darkMode, setDarkMode] = useState(false);
-
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.body.classList.toggle("bg-dark");
-    document.body.classList.toggle("text-light");
-  };
+const Navbar = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
       <div className="container py-2">
-        {/* Brand */}
+        {/* 🔹 Brand */}
         <Link className="navbar-brand fw-bold fs-4" to="/">
           🎓 EduSystem
         </Link>
 
-        {/* Toggler for mobile */}
+        {/* 🔹 Mobile Toggler */}
         <button
           className="navbar-toggler"
           type="button"
@@ -31,53 +24,30 @@ function Navbar() {
           <span className="navbar-toggler-icon"></span>
         </button>
 
-        {/* Collapsible Section */}
+        {/* 🔹 Collapsible Nav Section */}
         <div className="collapse navbar-collapse" id="navbarNav">
-          {/* Left Links */}
+          {/* Centered Nav Links */}
           <ul className="navbar-nav mx-auto">
-            <li className="nav-item mx-2">
-              <NavLink
-                to="/"
-                className={({ isActive }) =>
-                  "nav-link" + (isActive ? " active fw-bold" : "")
-                }
-              >
-                Home
-              </NavLink>
-            </li>
-            <li className="nav-item mx-2">
-              <NavLink
-                to="/students"
-                className={({ isActive }) =>
-                  "nav-link" + (isActive ? " active fw-bold" : "")
-                }
-              >
-                Students
-              </NavLink>
-            </li>
-            <li className="nav-item mx-2">
-              <NavLink
-                to="/teachers"
-                className={({ isActive }) =>
-                  "nav-link" + (isActive ? " active fw-bold" : "")
-                }
-              >
-                Teachers
-              </NavLink>
-            </li>
-            <li className="nav-item mx-2">
-              <NavLink
-                to="/departments"
-                className={({ isActive }) =>
-                  "nav-link" + (isActive ? " active fw-bold" : "")
-                }
-              >
-                Departments
-              </NavLink>
-            </li>
+            {[
+              { to: "/", label: "Home" },
+              { to: "/students", label: "Students" },
+              { to: "/teachers", label: "Teachers" },
+              { to: "/departments", label: "Departments" },
+            ].map(({ to, label }) => (
+              <li className="nav-item mx-2" key={to}>
+                <NavLink
+                  to={to}
+                  className={({ isActive }) =>
+                    "nav-link" + (isActive ? " active fw-bold" : "")
+                  }
+                >
+                  {label}
+                </NavLink>
+              </li>
+            ))}
           </ul>
 
-          {/* Right Controls */}
+          {/* 🔹 Right Controls */}
           <div className="d-flex align-items-center gap-3">
             {/* Search Bar */}
             <form className="d-none d-md-flex position-relative">
@@ -92,15 +62,6 @@ function Navbar() {
                 style={{ width: "180px" }}
               />
             </form>
-
-            {/* Dark Mode Toggle */}
-            <button
-              onClick={toggleDarkMode}
-              className="btn btn-outline-light btn-sm rounded-circle"
-              title="Toggle Theme"
-            >
-              {darkMode ? <FaSun /> : <FaMoon />}
-            </button>
 
             {/* Profile Dropdown */}
             <div className="dropdown">
@@ -141,6 +102,6 @@ function Navbar() {
       </div>
     </nav>
   );
-}
+};
 
 export default Navbar;

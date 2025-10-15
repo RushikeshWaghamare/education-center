@@ -5,6 +5,7 @@ const StudentList = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingStudentId, setEditingStudentId] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const pageFromUrl = parseInt(searchParams.get("page")) || 1;
   const [currentPage, setCurrentPage] = useState(pageFromUrl);
@@ -12,7 +13,7 @@ const StudentList = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
-  
+
   const [newStudent, setNewStudent] = useState({
     firstName: "",
     lastName: "",
@@ -25,34 +26,36 @@ const StudentList = () => {
   });
 
   // ✅ Fetch students with backend pagination
-  const fetchStudents = async (page = 1) => {
-  setLoading(true);
-  try {
-    const response = await fetch(
-      `https://localhost:44303/api/Students?pageNumber=${page}&pageSize=${studentsPerPage}&search=${encodeURIComponent(search)}`
-    );
-    if (!response.ok) throw new Error("Failed to fetch students");
-    const data = await response.json();
+  const fetchStudents = async (page = 1, updateUrl = true) => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `https://localhost:44303/api/Students?pageNumber=${page}&pageSize=${studentsPerPage}&search=${encodeURIComponent(search)}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch students");
+      const data = await response.json();
 
-    setStudents(data.students);
-    setCurrentPage(data.currentPage);
-    setTotalPages(data.totalPages);
+      setStudents(data.students);
+      setCurrentPage(data.currentPage);
+      setTotalPages(data.totalPages);
 
-    // ✅ Update URL when page changes
-    setSearchParams({ page, search });
-  } catch (error) {
-    console.error("Error fetching students:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+      // ✅ Only update URL when user triggers action
+    if (updateUrl) {
+      const params = {};
+      if (page > 1) params.page = page;
+      if (search) params.search = search;
+      setSearchParams(params);
+    }
+    } catch (error) {
+      console.error("Error fetching students:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-
-  // ✅ Load first page initially
   useEffect(() => {
-  fetchStudents(pageFromUrl);
-}, [pageFromUrl]);
-
+    fetchStudents(pageFromUrl, false);
+  }, []);
 
   // ✅ Handle form field changes
   const handleChange = (e) => {
@@ -60,7 +63,7 @@ const StudentList = () => {
     setNewStudent((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Handle form submission (Add student)
+  // ✅ Handle form submission (Add / Edit)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -76,8 +79,14 @@ const StudentList = () => {
     };
 
     try {
-      const response = await fetch("https://localhost:44303/api/Students", {
-        method: "POST",
+      const url = editingStudentId
+        ? `https://localhost:44303/api/Students/${editingStudentId}`
+        : "https://localhost:44303/api/Students";
+
+      const method = editingStudentId ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
@@ -92,61 +101,86 @@ const StudentList = () => {
 
       if (!response.ok) throw new Error(JSON.stringify(data));
 
-      // ✅ Refresh list (first page)
-      await fetchStudents(1);
-      showToast("Student added successfully!", "success");
+      await fetchStudents(editingStudentId ? currentPage : 1);
+      showToast(
+        editingStudentId
+          ? "Student updated successfully!"
+          : "Student added successfully!",
+        "success"
+      );
 
       setShowForm(false);
-      setNewStudent({
-        firstName: "",
-        lastName: "",
-        gender: "",
-        dateOfBirth: "",
-        email: "",
-        phone: "",
-        address: "",
-        status: "Active",
-      });
-      setCurrentPage(1);
+      setEditingStudentId(null);
+      resetForm();
     } catch (error) {
-      console.error("Error adding student:", error);
-      showToast("Failed to add student.", "error");
+      console.error("Error saving student:", error);
+      showToast("Failed to save student.", "error");
     }
   };
 
   // ✅ Handle Delete Student
-const handleDelete = async (studentID) => {
-  if (!window.confirm("Are you sure you want to delete this student?")) return;
+  const handleDelete = async (studentID) => {
+    if (!window.confirm("Are you sure you want to delete this student?")) return;
 
-  try {
-    const response = await fetch(`https://localhost:44303/api/Students/${studentID}`, {
-      method: "DELETE",
+    try {
+      const response = await fetch(
+        `https://localhost:44303/api/Students/${studentID}`,
+        { method: "DELETE" }
+      );
+      if (!response.ok) throw new Error("Failed to delete student");
+
+      await fetchStudents(currentPage);
+      showToast("Student deleted successfully!", "success");
+    } catch (error) {
+      console.error("Error deleting student:", error);
+      showToast("Failed to delete student.", "error");
+    }
+  };
+
+  // ✅ Edit Student Handler
+  const handleEdit = (student) => {
+    setEditingStudentId(student.studentID);
+    setNewStudent({
+      firstName: student.firstName || "",
+      lastName: student.lastName || "",
+      gender: student.gender || "",
+      dateOfBirth: student.dateOfBirth
+        ? student.dateOfBirth.split("T")[0]
+        : "",
+      email: student.email || "",
+      phone: student.phone || "",
+      address: student.address || "",
+      status: student.status || "Active",
     });
+    setShowForm(true);
+  };
 
-    if (!response.ok) throw new Error("Failed to delete student");
+  // ✅ Reset form
+  const resetForm = () => {
+    setNewStudent({
+      firstName: "",
+      lastName: "",
+      gender: "",
+      dateOfBirth: "",
+      email: "",
+      phone: "",
+      address: "",
+      status: "Active",
+    });
+  };
 
-    await fetchStudents(currentPage);
-    showToast("Student deleted successfully!", "success"); // ✅ Toast success
-  } catch (error) {
-    console.error("Error deleting student:", error);
-    showToast("Failed to delete student.", "error"); // ✅ Toast error
-  }
-};
-
-
-// ✅ Show toast
-const showToast = (message, type = "success") => {
-  setToast({ show: true, message, type });
-  setTimeout(() => setToast({ show: false, message: "", type: "" }), 3000); // auto-hide in 3s
-};
-
-
+  // ✅ Toast helper
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: "", type: "" }), 3000);
+  };
 
   // ✅ Pagination controls
   const paginate = (pageNumber) => fetchStudents(pageNumber);
-  const nextPage = () => currentPage < totalPages && fetchStudents(currentPage + 1);
-  const prevPage = () => currentPage > 1 && fetchStudents(currentPage - 1);
-
+  const nextPage = () =>
+    currentPage < totalPages && fetchStudents(currentPage + 1);
+  const prevPage = () =>
+    currentPage > 1 && fetchStudents(currentPage - 1);
 
   if (loading)
     return <p className="text-center mt-5 fs-5 fw-semibold">Loading...</p>;
@@ -156,39 +190,35 @@ const showToast = (message, type = "success") => {
       <h2 className="fw-bold text-primary mb-3 text-center">Student List</h2>
 
       <div className="d-flex justify-content-between align-items-center mb-3">
-      {/* Add New Student Button on the left */}
-      <button
-        className="btn btn-success fw-semibold"
-        onClick={() => setShowForm(true)}
-      >
-        ➕ Add New Student
-      </button>
-
-      {/* Search Input + Button on the right */}
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <input
-          type="text"
-          className="form-control"
-          style={{ width: "180px" }} // fixed small width
-          placeholder="Search..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") fetchStudents(1);
-          }}
-        />
         <button
-          className="btn btn-primary ms-2"
-          onClick={() => fetchStudents(1)}
+          className="btn btn-success fw-semibold"
+          onClick={() => {
+            resetForm();
+            setEditingStudentId(null);
+            setShowForm(true);
+          }}
         >
-          Search
+          ➕ Add New Student
         </button>
-      </div>
-    </div>
 
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <input
+            type="text"
+            className="form-control"
+            style={{ width: "180px" }}
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && fetchStudents(1)}
+          />
+          <button className="btn btn-primary ms-2" onClick={() => fetchStudents(1)}>
+            Search
+          </button>
+        </div>
+      </div>
 
       {/* Student Table */}
-      <div className="table-responsive shadow-sm rounded">        
+      <div className="table-responsive shadow-sm rounded">
         <table className="table table-striped table-hover table-bordered align-middle text-center mb-0">
           <thead className="table-dark">
             <tr>
@@ -218,18 +248,26 @@ const showToast = (message, type = "success") => {
                   <td>{s.phone}</td>
                   <td>{s.address}</td>
                   <td>
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleDelete(s.studentID)}
-                    >
-                      🗑
-                    </button>
+                    <div className="d-flex justify-content-center gap-2">
+                      <button
+                        className="btn btn-sm btn-warning text-white"
+                        onClick={() => handleEdit(s)}
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className="btn btn-sm btn-danger"
+                        onClick={() => handleDelete(s.studentID)}
+                      >
+                        🗑
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="7" className="text-center text-muted fw-semibold p-3">
+                <td colSpan="8" className="text-center text-muted fw-semibold p-3">
                   No students found.
                 </td>
               </tr>
@@ -238,7 +276,7 @@ const showToast = (message, type = "success") => {
         </table>
       </div>
 
-      {/* ✅ Pagination Controls */}
+      {/* Pagination */}
       {totalPages > 1 && (
         <nav className="d-flex justify-content-center align-items-center mt-3">
           <ul className="pagination m-0">
@@ -253,14 +291,19 @@ const showToast = (message, type = "success") => {
                 key={index}
                 className={`page-item ${currentPage === index + 1 ? "active" : ""}`}
               >
-                <button className="page-link" onClick={() => paginate(index + 1)}>
+                <button
+                  className="page-link"
+                  onClick={() => paginate(index + 1)}
+                >
                   {index + 1}
                 </button>
               </li>
             ))}
 
             <li
-              className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+              className={`page-item ${
+                currentPage === totalPages ? "disabled" : ""
+              }`}
             >
               <button className="page-link" onClick={nextPage}>
                 Next
@@ -270,7 +313,7 @@ const showToast = (message, type = "success") => {
         </nav>
       )}
 
-      {/* Add Student Modal */}
+      {/* Add/Edit Student Modal */}
       {showForm && (
         <div
           className="modal fade show d-block"
@@ -281,11 +324,16 @@ const showToast = (message, type = "success") => {
           <div className="modal-dialog modal-lg modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title fw-bold text-primary">Add New Student</h5>
+                <h5 className="modal-title fw-bold text-primary">
+                  {editingStudentId ? "Edit Student" : "Add New Student"}
+                </h5>
                 <button
                   type="button"
                   className="btn-close"
-                  onClick={() => setShowForm(false)}
+                  onClick={() => {
+                    setShowForm(false);
+                    setEditingStudentId(null);
+                  }}
                 ></button>
               </div>
 
@@ -348,12 +396,15 @@ const showToast = (message, type = "success") => {
                   <button
                     type="button"
                     className="btn btn-secondary"
-                    onClick={() => setShowForm(false)}
+                    onClick={() => {
+                      setShowForm(false);
+                      setEditingStudentId(null);
+                    }}
                   >
                     Cancel
                   </button>
                   <button type="submit" className="btn btn-primary">
-                    Save Student
+                    {editingStudentId ? "Update Student" : "Save Student"}
                   </button>
                 </div>
               </form>
@@ -361,27 +412,28 @@ const showToast = (message, type = "success") => {
           </div>
         </div>
       )}
-    {/* ✅ Toast Notification */}
-    {toast.show && (
-      <div
-        className={`toast align-items-center text-white border-0 position-fixed bottom-0 end-0 m-4 bg-${
-          toast.type === "success" ? "success" : "danger"
-        } show`}
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
-        style={{ zIndex: 1056, minWidth: "250px" }}
-      >
-        <div className="d-flex">
-          <div className="toast-body fw-semibold">{toast.message}</div>
-          <button
-            type="button"
-            className="btn-close btn-close-white me-2 m-auto"
-            onClick={() => setToast({ show: false, message: "", type: "" })}
-          ></button>
+
+      {/* Toast Notification */}
+      {toast.show && (
+        <div
+          className={`toast align-items-center text-white border-0 position-fixed bottom-0 end-0 m-4 bg-${
+            toast.type === "success" ? "success" : "danger"
+          } show`}
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+          style={{ zIndex: 1056, minWidth: "250px" }}
+        >
+          <div className="d-flex">
+            <div className="toast-body fw-semibold">{toast.message}</div>
+            <button
+              type="button"
+              className="btn-close btn-close-white me-2 m-auto"
+              onClick={() => setToast({ show: false, message: "", type: "" })}
+            ></button>
+          </div>
         </div>
-      </div>
-    )}
+      )}
     </div>
   );
 };
