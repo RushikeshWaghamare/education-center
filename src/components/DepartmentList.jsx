@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -210,7 +211,14 @@ const DepartmentList = () => {
             {departments.length ? (
               departments.map((d) => (
                 <tr key={d.departmentID}>
-                  <td>{d.departmentName}</td>
+                  <td>
+                    <Link 
+                      to={`/departments/${d.departmentID}`} 
+                      className="text-decoration-none fw-semibold text-primary"
+                    >
+                      {d.departmentName}
+                    </Link>
+                  </td>
                   <td>{d.description}</td>
                   <td>
                     <div className="d-flex justify-content-center gap-2">

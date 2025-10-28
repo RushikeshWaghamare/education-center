@@ -30,9 +30,11 @@ const Navbar = () => {
           <ul className="navbar-nav mx-auto">
             {[
               { to: "/", label: "Home" },
-              { to: "/students", label: "Students" },
-              { to: "/teachers", label: "Teachers" },
-              { to: "/departments", label: "Departments" },
+              { to: "/about", label: "AboutUs" },
+              { to: "/departments", label: "Courses" },
+              { to: "/students", label: "Leraners" },
+              { to: "/teachers", label: "Faculties" },          
+              { to: "/contact", label: "ContactUs" },
             ].map(({ to, label }) => (
               <li className="nav-item mx-2" key={to}>
                 <NavLink

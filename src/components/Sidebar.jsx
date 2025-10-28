@@ -7,37 +7,38 @@ import {
   FaBars,
   FaHome,
   FaSignOutAlt,
+  FaEnvelope,
+  FaInfoCircle,
 } from "react-icons/fa";
 
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const toggleSidebar = () => setIsCollapsed((prev) => !prev);
 
-  // ✅ Reusable helper for active/inactive link styles
   const getNavLinkClass = (isActive) =>
     `nav-link d-flex align-items-center ${
-      isActive
-        ? "fw-bold bg-light text-primary rounded-3"
-        : "text-white"
+      isActive ? "fw-bold bg-light text-primary rounded-3" : "text-white"
     }`;
 
-  // ✅ Centralized menu data for easier management
   const menuItems = [
     { to: "/", label: "Dashboard", icon: <FaHome className="me-2 fs-5" /> },
-    { to: "/students", label: "Students", icon: <FaUserGraduate className="me-2 fs-5" /> },
-    { to: "/teachers", label: "Teachers", icon: <FaChalkboardTeacher className="me-2 fs-5" /> },
-    { to: "/departments", label: "Departments", icon: <FaBuilding className="me-2 fs-5" /> },
+    { to: "/about", label: "AboutUs", icon: <FaInfoCircle className="me-2 fs-5" /> },
+    { to: "/departments", label: "Courses", icon: <FaBuilding className="me-2 fs-5" /> },
+    { to: "/students", label: "Lerners", icon: <FaUserGraduate className="me-2 fs-5" /> },
+    { to: "/teachers", label: "Faculties", icon: <FaChalkboardTeacher className="me-2 fs-5" /> },
+    { to: "/contact", label: "ContactUs", icon: <FaEnvelope className="me-2 fs-5" /> },
   ];
 
   return (
     <aside
-      className={`d-flex flex-column bg-primary text-white vh-100 p-3 shadow-sm ${
+      className={`d-flex flex-column bg-primary text-white p-3 shadow-sm position-fixed top-0 start-0 h-100 ${
         isCollapsed ? "sidebar-closed" : "sidebar-open"
       }`}
       style={{
         transition: "width 0.3s ease",
-        overflowY: "auto",
         width: isCollapsed ? "80px" : "240px",
+        zIndex: 1050, // keeps it above main content
+        overflow: "hidden", // prevents sidebar from scrolling
       }}
     >
       {/* 🔹 Brand Header */}
