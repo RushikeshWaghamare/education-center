@@ -1,17 +1,18 @@
 import React from "react";
 import { Link, NavLink } from "react-router-dom";
-import { FaUserCircle, FaSearch } from "react-icons/fa";
+import { FaSearch } from "react-icons/fa";
 
 const Navbar = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
       <div className="container py-2">
-        {/* 🔹 Brand */}
+
+        {/* Brand */}
         <Link className="navbar-brand fw-bold fs-4" to="/">
           🎓 EduSystem
         </Link>
 
-        {/* 🔹 Mobile Toggler */}
+        {/* Mobile Toggler */}
         <button
           className="navbar-toggler"
           type="button"
@@ -24,16 +25,15 @@ const Navbar = () => {
           <span className="navbar-toggler-icon"></span>
         </button>
 
-        {/* 🔹 Collapsible Nav Section */}
         <div className="collapse navbar-collapse" id="navbarNav">
-          {/* Centered Nav Links */}
+          {/* Nav Links */}
           <ul className="navbar-nav mx-auto">
             {[
               { to: "/", label: "Home" },
               { to: "/about", label: "AboutUs" },
               { to: "/departments", label: "Courses" },
               { to: "/students", label: "Leraners" },
-              { to: "/teachers", label: "Faculties" },          
+              { to: "/teachers", label: "Faculties" },
               { to: "/contact", label: "ContactUs" },
             ].map(({ to, label }) => (
               <li className="nav-item mx-2" key={to}>
@@ -49,14 +49,10 @@ const Navbar = () => {
             ))}
           </ul>
 
-          {/* 🔹 Right Controls */}
+          {/* Right Controls */}
           <div className="d-flex align-items-center gap-3">
             {/* Search Bar */}
             <form className="d-none d-md-flex position-relative">
-              <FaSearch
-                className="position-absolute top-50 start-0 translate-middle-y text-light ms-2"
-                size={14}
-              />
               <input
                 type="text"
                 className="form-control form-control-sm ps-4 rounded-pill"
@@ -65,40 +61,13 @@ const Navbar = () => {
               />
             </form>
 
-            {/* Profile Dropdown */}
-            <div className="dropdown">
-              <button
-                className="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center"
-                id="profileDropdown"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <FaUserCircle className="me-2" size={18} /> Admin
-              </button>
-              <ul
-                className="dropdown-menu dropdown-menu-end shadow-sm"
-                aria-labelledby="profileDropdown"
-              >
-                <li>
-                  <Link className="dropdown-item" to="#">
-                    Profile
-                  </Link>
-                </li>
-                <li>
-                  <Link className="dropdown-item" to="#">
-                    Settings
-                  </Link>
-                </li>
-                <li>
-                  <hr className="dropdown-divider" />
-                </li>
-                <li>
-                  <Link className="dropdown-item text-danger" to="#">
-                    Logout
-                  </Link>
-                </li>
-              </ul>
-            </div>
+            {/* Sign In & Sign Up Buttons */}
+            <Link to="/login" className="btn btn-outline-light btn-sm">
+              Log In
+            </Link>
+            <Link to="/signup" className="btn btn-light btn-sm text-primary fw-bold">
+              Sign Up
+            </Link>
           </div>
         </div>
       </div>

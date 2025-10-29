@@ -1,6 +1,8 @@
 import React from "react";
 import { Routes, Route, Link } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import Sidebar from "./components/Sidebar";
 import AboutUs from "./components/AboutUs";
 import StudentList from "./components/StudentList";
@@ -24,6 +26,8 @@ const App = () => {
 
         <main className="flex-grow-1 p-4">
           <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
             <Route path="/" element={<Dashboard />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/students" element={<StudentList />} />
