@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../utils/authService";
+import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [toast, setToast] = useState({ show: false, message: "", type: "" }); // success | danger
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
   const navigate = useNavigate();
+  const { login } = useAuth(); // ✅ From context
 
-  // Auto-hide toast after 3 seconds
   useEffect(() => {
     if (!toast.show) return;
     const t = setTimeout(() => setToast((prev) => ({ ...prev, show: false })), 3000);
@@ -20,19 +21,22 @@ const Login = () => {
     e.preventDefault();
     setError("");
     try {
-      await loginUser({ email, password });
+      const data = await loginUser({ email, password });
+      login(data.user); // ✅ Save user in context
       setToast({ show: true, message: "Logged in successfully!", type: "success" });
-      // Redirect after brief delay so user can see toast
       setTimeout(() => navigate("/"), 800);
     } catch (err) {
       setError("Invalid email or password");
-      setToast({ show: true, message: "Login failed. Please check your credentials.", type: "danger" });
+      setToast({
+        show: true,
+        message: "Login failed. Please check your credentials.",
+        type: "danger",
+      });
     }
   };
 
   return (
     <div className="container mt-5" style={{ maxWidth: "400px" }}>
-      {/* Toast (Bootstrap style) */}
       {toast.show && (
         <div
           className={`alert alert-${toast.type} alert-dismissible fade show`}

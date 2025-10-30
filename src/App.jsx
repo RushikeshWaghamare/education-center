@@ -12,10 +12,12 @@ import Dashboard from "./components/Homepage";
 import Footer from "./components/Footer";
 import ContactUs from "./components/ContactUs";
 import DepartmentDetail from "./components/DepartmentDetail";
+import { AuthProvider } from "./context/AuthContext";
 
 // ✅ Main App Layout
 const App = () => {
   return (
+    <AuthProvider>
     <div className="d-flex">
       {/* Sidebar */}
       <Sidebar />
@@ -23,7 +25,6 @@ const App = () => {
       {/* Main Content */}
       <div className="flex-grow-1 d-flex flex-column min-vh-100 bg-light">
         <Navbar />
-
         <main className="flex-grow-1 p-4">
           <Routes>
             <Route path="/login" element={<Login />} />
@@ -37,10 +38,10 @@ const App = () => {
             <Route path="/departments/:id" element={<DepartmentDetail />} />
           </Routes>
         </main>
-
         <Footer />
       </div>
     </div>
+    </AuthProvider>
   );
 };
 

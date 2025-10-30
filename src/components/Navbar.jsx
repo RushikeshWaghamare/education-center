@@ -1,18 +1,18 @@
 import React from "react";
 import { Link, NavLink } from "react-router-dom";
 import { FaSearch } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
+  const { user, logout } = useAuth();
+
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
       <div className="container py-2">
-
-        {/* Brand */}
         <Link className="navbar-brand fw-bold fs-4" to="/">
           🎓 EduSystem
         </Link>
 
-        {/* Mobile Toggler */}
         <button
           className="navbar-toggler"
           type="button"
@@ -26,13 +26,12 @@ const Navbar = () => {
         </button>
 
         <div className="collapse navbar-collapse" id="navbarNav">
-          {/* Nav Links */}
           <ul className="navbar-nav mx-auto">
             {[
               { to: "/", label: "Home" },
               { to: "/about", label: "AboutUs" },
               { to: "/departments", label: "Courses" },
-              { to: "/students", label: "Leraners" },
+              { to: "/students", label: "Learners" },
               { to: "/teachers", label: "Faculties" },
               { to: "/contact", label: "ContactUs" },
             ].map(({ to, label }) => (
@@ -49,9 +48,7 @@ const Navbar = () => {
             ))}
           </ul>
 
-          {/* Right Controls */}
           <div className="d-flex align-items-center gap-3">
-            {/* Search Bar */}
             <form className="d-none d-md-flex position-relative">
               <input
                 type="text"
@@ -61,13 +58,25 @@ const Navbar = () => {
               />
             </form>
 
-            {/* Sign In & Sign Up Buttons */}
-            <Link to="/login" className="btn btn-outline-light btn-sm">
-              Log In
-            </Link>
-            <Link to="/signup" className="btn btn-light btn-sm text-primary fw-bold">
-              Sign Up
-            </Link>
+            {user ? (
+              <div className="d-flex align-items-center gap-2">
+                <span className="text-white fw-semibold">
+                  👋 Hi, {user.firstName}
+                </span>
+                <button className="btn btn-outline-light btn-sm" onClick={logout}>
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link to="/login" className="btn btn-outline-light btn-sm">
+                  Log In
+                </Link>
+                <Link to="/signup" className="btn btn-light btn-sm text-primary fw-bold">
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
